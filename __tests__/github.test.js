@@ -34,6 +34,27 @@ describe('github routes', () => {
     });
   });
 
+  it('DELETE /api/v1/github/sessions should log out a user', async () => {
+    const res1 = await request
+      .agent(app)
+      .get('/api/v1/github/callback?code=55')
+      .redirects(1);
+
+    expect(res1.body).toEqual({
+      id: expect.any(Number),
+      username: 'fake_github_user',
+      email: 'not-real@example.com',
+      avatar: 'https://www.placecage.com/gif/300/300',
+      iat: expect.any(Number),
+      exp: expect.any(Number),
+    });
+
+    const res2 = await request(app).delete('/api/v1/github/sessions');
+
+    expect(res2.status).toEqual(200);
+    expect(res2.body.message).toEqual('Signed out successfully');
+  });
+
   afterAll(() => {
     pool.end();
   });
