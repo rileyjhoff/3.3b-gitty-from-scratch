@@ -35,12 +35,12 @@ describe('github routes', () => {
   });
 
   it('DELETE /api/v1/github/sessions should log out a user', async () => {
-    const res1 = await request(app).get('/api/v1/github/dashboard');
+    const agent = request.agent(app);
+    const res1 = await agent.get('/api/v1/github/dashboard');
 
     expect(res1.status).toEqual(401);
 
-    const res2 = await request
-      .agent(app)
+    const res2 = await agent
       .get('/api/v1/github/callback?code=55')
       .redirects(1);
 
@@ -53,10 +53,14 @@ describe('github routes', () => {
       exp: expect.any(Number),
     });
 
-    const res3 = await request(app).delete('/api/v1/github/sessions');
+    const res3 = await agent.get('/api/v1/github/dashboard');
 
     expect(res3.status).toEqual(200);
-    expect(res3.body.message).toEqual('Signed out successfully');
+
+    const res4 = await agent.delete('/api/v1/github/sessions');
+
+    expect(res4.status).toEqual(200);
+    expect(res4.body.message).toEqual('Signed out successfully');
   });
 
   afterAll(() => {
