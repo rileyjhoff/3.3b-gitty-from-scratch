@@ -3,13 +3,38 @@ const setup = require('../data/setup');
 const request = require('supertest');
 const app = require('../lib/app');
 
-describe('backend-express-template routes', () => {
+jest.mock('../lib/services/github.js');
+
+describe('posts routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
-  it('example test - delete me!', () => {
-    expect(1).toEqual(1);
+
+  it('GET /api/v1/posts should return a list of posts if authenticated', async () => {
+    const res1 = await request.agent(app).get('/api/v1/posts');
+
+    expect(res1.status).toEqual(401);
+
+    const res2 = await request
+      .agent(app)
+      .get('/api/v1/github/callback?code=55')
+      .redirects(1);
+
+    expect(res2.body).toEqual({
+      id: expect.any(Number),
+      username: 'fake_github_user',
+      email: 'not-real@example.com',
+      avatar: 'https://www.placecage.com/gif/300/300',
+      iat: expect.any(Number),
+      exp: expect.any(Number),
+    });
+
+    const res3 = await request.agent(app).get('/api/v1/posts');
+
+    expect(res3.status).toEqual(200);
+    expect(res3.body.post).toEqual('this is a test');
   });
+
   afterAll(() => {
     pool.end();
   });
