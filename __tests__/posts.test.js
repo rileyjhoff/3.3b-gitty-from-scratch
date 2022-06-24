@@ -11,12 +11,12 @@ describe('posts routes', () => {
   });
 
   it('GET /api/v1/posts should return a list of posts if authenticated', async () => {
-    const res1 = await request.agent(app).get('/api/v1/posts');
+    const agent = request.agent(app);
+    const res1 = await agent.get('/api/v1/posts');
 
     expect(res1.status).toEqual(401);
 
-    const res2 = await request
-      .agent(app)
+    const res2 = await agent
       .get('/api/v1/github/callback?code=55')
       .redirects(1);
 
@@ -29,7 +29,7 @@ describe('posts routes', () => {
       exp: expect.any(Number),
     });
 
-    const res3 = await request.agent(app).get('/api/v1/posts');
+    const res3 = await agent.get('/api/v1/posts');
 
     expect(res3.status).toEqual(200);
     expect(res3.body.post).toEqual('this is a test');
